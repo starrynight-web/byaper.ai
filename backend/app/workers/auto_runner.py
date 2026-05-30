@@ -8,7 +8,7 @@ from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timezone
 
-from app.core.database import async_session_maker
+from app.core.database import AsyncSessionLocal
 from app.models.automation import Automation
 from app.models.business import Business
 from app.models.message import Message
@@ -165,7 +165,7 @@ async def auto_runner_loop():
     
     while True:
         try:
-            async with async_session_maker() as db:
+            async with AsyncSessionLocal() as db:
                 # Find all enabled automations that are in full auto mode
                 query = select(Automation).where(
                     and_(
