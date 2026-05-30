@@ -17,3 +17,6 @@ name = "byaper-ai-backend"
 version = "1.0.0"
 description = "Byapar AI — Multi-tenant AI Automation SaaS Backend"
 requires-python = ">=3.12"
+
+[tool.vercel]
+entrypoint = "app.main:app"

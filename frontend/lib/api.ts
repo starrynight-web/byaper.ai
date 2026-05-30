@@ -4,7 +4,9 @@
  * For server-side or manual token usage, reads from localStorage fallback.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1'
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  (process.env.NODE_ENV === 'production' ? '/_/backend/api/v1' : 'http://localhost:8000/api/v1')
 
 // Demo mock data — returned when demo_mode cookie is active
 const DEMO_DATA: Record<string, unknown> = {

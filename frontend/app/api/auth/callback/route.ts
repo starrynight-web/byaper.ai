@@ -13,7 +13,8 @@ export async function GET(request: Request) {
     if (!error && session) {
       // Sync user with backend
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/sync-user`, {
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || `${origin}/_/backend/api/v1`
+        await fetch(`${apiBase}/auth/sync-user`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
