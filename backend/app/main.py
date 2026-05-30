@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1 import (
     auth, workspaces, posts, messages, reviews, 
-    gbp, automations, team, analytics
+    gbp, automations, team, analytics, workers
 )
 
 app = FastAPI(
@@ -35,6 +35,7 @@ app.include_router(gbp.router, prefix="/api/v1")
 app.include_router(automations.router, prefix="/api/v1")
 app.include_router(team.router, prefix="/api/v1")
 app.include_router(analytics.router, prefix="/api/v1")
+app.include_router(workers.router, prefix="/api/v1")
 
 @app.get("/health")
 async def health_check():
