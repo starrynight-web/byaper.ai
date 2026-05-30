@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     if (!error && session) {
       // Sync user with backend
       try {
-        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || `${origin}/_/backend/api/v1`
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || `${origin}/_backend/api/v1`
         await fetch(`${apiBase}/auth/sync-user`, {
           method: 'POST',
           headers: {

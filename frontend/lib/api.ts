@@ -6,7 +6,7 @@
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  (process.env.NODE_ENV === 'production' ? '/_/backend/api/v1' : 'http://localhost:8000/api/v1')
+  (process.env.NODE_ENV === 'production' ? '/_backend/api/v1' : 'http://localhost:8000/api/v1')
 
 // Demo mock data — returned when demo_mode cookie is active
 const DEMO_DATA: Record<string, unknown> = {
