@@ -1,46 +1,43 @@
 """
-JWT validation using Supabase-issued tokens.
-Verifies that incoming requests carry a valid Supabase session JWT.
+JWT Security Module — Byapar AI owns the entire auth flow.
+Google OAuth is handled directly by FastAPI backend.
+Supabase is used only as a database.
 """
-from fastapi import HTTPException, Security, status
+from datetime import datetime, timedelta, timezone
+
+from fastapi import Cookie, HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
+from typing import Optional
 
 from app.core.config import settings
 
-_bearer = HTTPBearer(auto_error=True)
+_bearer = HTTPBearer(auto_error=False)
 
 
-def _get_jwt_secret() -> str:
-    """
-    Supabase JWTs are signed with the project JWT secret.
-    For local validation we use the anon key's base secret.
-    In production, use SUPABASE_JWT_SECRET env var (from Supabase dashboard).
-    """
-    return settings.supabase_anon_key
+def create_access_token(user_id: str, email: str, name: str | None = None) -> str:
+    """Create a signed JWT for the authenticated user."""
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_expire_minutes)
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "name": name or "",
+        "exp": expire,
+        "iat": datetime.now(timezone.utc),
+    }
+    return jwt.encode(payload, settings.jwt_secret_key, algorithm=settings.jwt_algorithm)
 
 
-def verify_supabase_token(
-    credentials: HTTPAuthorizationCredentials = Security(_bearer),
-) -> dict:
-    """
-    FastAPI dependency. Returns the decoded JWT payload (claims).
-    Raises 401 if token is invalid or expired.
-    """
-    token = credentials.credentials
+def decode_token(token: str) -> dict:
+    """Decode and verify a JWT. Raises 401 on failure."""
     try:
         payload = jwt.decode(
             token,
-            _get_jwt_secret(),
-            algorithms=["HS256"],
-            options={"verify_aud": False},
+            settings.jwt_secret_key,
+            algorithms=[settings.jwt_algorithm],
         )
-        user_id: str | None = payload.get("sub")
-        if not user_id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication token",
-            )
+        if not payload.get("sub"):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
         return payload
     except JWTError as exc:
         raise HTTPException(
@@ -49,6 +46,31 @@ def verify_supabase_token(
         ) from exc
 
 
-def get_current_user_id(payload: dict = Security(verify_supabase_token)) -> str:
+def get_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Security(_bearer),
+    access_token: Optional[str] = Cookie(default=None),
+) -> dict:
+    """
+    FastAPI dependency — accepts token from:
+    1. Authorization: Bearer <token> header (API clients)
+    2. access_token httpOnly cookie (browser)
+    """
+    token = None
+
+    if credentials and credentials.credentials:
+        token = credentials.credentials
+    elif access_token:
+        token = access_token
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
+    return decode_token(token)
+
+
+def get_current_user_id(user: dict = Security(get_current_user)) -> str:
     """FastAPI dependency — returns the authenticated user's UUID string."""
-    return payload["sub"]
+    return user["sub"]

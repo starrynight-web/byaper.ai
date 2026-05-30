@@ -35,10 +35,16 @@ class Settings(BaseSettings):
     meta_app_secret: str = ""
     meta_verify_token: str = "byaper_webhook_verify_token"
 
-    # Google
+    # Google OAuth
     google_client_id: str = ""
     google_client_secret: str = ""
+    google_redirect_uri: str = "http://localhost:8000/api/v1/auth/google/callback"
     gbp_api_key: str = ""
+
+    # JWT (our own, not Supabase)
+    jwt_secret_key: str = "byapar-ai-super-secret-change-in-production-2026"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
 
     # App
     simulation_mode: bool = True

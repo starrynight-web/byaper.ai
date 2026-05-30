@@ -16,8 +16,12 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.app_url],
-    allow_credentials=True,
+    allow_origins=[
+        settings.app_url,
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,  # CRITICAL: allows cookies to be sent cross-origin
     allow_methods=["*"],
     allow_headers=["*"],
 )
