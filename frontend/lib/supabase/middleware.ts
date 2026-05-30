@@ -36,15 +36,17 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/login')
+  const isDemoMode = request.cookies.get('demo_mode')?.value === 'true'
+  const isLandingPage = request.nextUrl.pathname === '/'
   
   // Basic route protection
-  if (!user && !isAuthPage) {
+  if (!user && !isDemoMode && !isAuthPage && !isLandingPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
-  if (user && isAuthPage) {
+  if ((user || isDemoMode) && isAuthPage) {
     const url = request.nextUrl.clone()
     url.pathname = '/workspace'
     return NextResponse.redirect(url)

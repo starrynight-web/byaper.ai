@@ -19,6 +19,32 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
     }
   }
 
+  // Check for demo mode
+  let isDemo = false;
+  if (typeof window !== 'undefined') {
+    isDemo = document.cookie.includes('demo_mode=true');
+  }
+
+  // Intercept specific endpoints for demo mode
+  if (isDemo) {
+    if (url === '/workspaces') {
+      return [
+        {
+          business: { id: 'demo-business-123', name: 'Demo Cafe & Bakery', category: 'restaurant', location: 'Dhaka' },
+          role: 'owner'
+        }
+      ]
+    }
+    if (url === '/analytics/summary') {
+      return {
+        posts_published: 12,
+        messages_handled: 145,
+        reviews_replied: 28,
+        avg_response_time_seconds: 15
+      }
+    }
+  }
+
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${url}`, {
     ...options,
     headers,
