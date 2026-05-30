@@ -1,0 +1,19 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[project]
+name = "byaper-ai-backend"
+version = "1.0.0"
+description = "Byapar AI — Multi-tenant AI Automation SaaS Backend"
+requires-python = ">=3.12"
