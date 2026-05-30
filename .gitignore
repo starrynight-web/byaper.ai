@@ -26,6 +26,7 @@ frontend/.next/
 .vscode/
 .idea/
 *.swp
+.agents
 
 # OS
 Thumbs.db
