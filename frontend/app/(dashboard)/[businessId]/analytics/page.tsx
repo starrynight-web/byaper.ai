@@ -68,7 +68,7 @@ export default function AnalyticsPage() {
     { label: 'Time Saved', value: `${data.hours_saved} hrs`, icon: Clock, color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
     { label: 'Messages Handled', value: data.messages_handled, icon: MessageSquare, color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
     { label: 'Reviews Replied', value: data.reviews_replied, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100' },
-    { label: 'Posts Published', value: data.posts_published, icon: LayoutTemplate, color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-100' },
+    { label: 'Posts Published', value: data.posts_published, icon: LayoutTemplate, color: 'text-cyan-600', bg: 'bg-cyan-50', border: 'border-cyan-100' },
   ]
 
   return (
@@ -81,7 +81,7 @@ export default function AnalyticsPage() {
           </h1>
           <p className="text-gray-500 mt-1">Track how much time your AI agents are saving you (Last 30 Days)</p>
         </div>
-        <select className="h-10 rounded-xl border-gray-200 bg-white text-sm font-medium shadow-sm outline-none px-4">
+        <select aria-label="Select time period" className="h-10 rounded-xl border-gray-200 bg-white text-sm font-medium shadow-sm outline-none px-4">
           <option>Last 30 Days</option>
           <option>Last 7 Days</option>
           <option>All Time</option>

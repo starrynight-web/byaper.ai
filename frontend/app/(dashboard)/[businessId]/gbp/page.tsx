@@ -158,7 +158,7 @@ export default function GBPPage() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {[
                 { label: 'Views', value: insights?.views, icon: Eye, color: 'text-blue-600', bg: 'bg-blue-50' },
-                { label: 'Searches', value: insights?.searches, icon: Search, color: 'text-purple-600', bg: 'bg-purple-50' },
+                { label: 'Searches', value: insights?.searches, icon: Search, color: 'text-cyan-600', bg: 'bg-cyan-50' },
                 { label: 'Clicks', value: insights?.clicks, icon: MousePointerClick, color: 'text-amber-600', bg: 'bg-amber-50' },
                 { label: 'Calls', value: insights?.calls, icon: Phone, color: 'text-green-600', bg: 'bg-green-50' },
                 { label: 'Directions', value: insights?.directions, icon: MapPin, color: 'text-rose-600', bg: 'bg-rose-50' },

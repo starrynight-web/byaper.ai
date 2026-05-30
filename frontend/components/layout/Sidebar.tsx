@@ -9,7 +9,7 @@ import { useWorkspaceStore } from '@/lib/stores/workspaceStore'
 
 export function Sidebar() {
   const pathname = usePathname()
-  const { activeBusinessId, activeRole } = useWorkspaceStore()
+  const { activeBusinessId, activeRole, activeBusinessName } = useWorkspaceStore()
 
   if (!activeBusinessId) return null
 
@@ -20,7 +20,7 @@ export function Sidebar() {
     { name: 'Posts', href: `${basePath}/posts`, icon: Megaphone },
     { name: 'Messages', href: `${basePath}/messages`, icon: MessageSquare },
     { name: 'Reviews', href: `${basePath}/reviews`, icon: Star },
-    { name: 'GBP Manager', href: `${basePath}/gbp`, icon: Building2Icon }, // Placeholder for GBP icon
+    { name: 'GBP Manager', href: `${basePath}/gbp`, icon: Building2Icon },
     { name: 'Automations', href: `${basePath}/automations`, icon: Zap },
     { name: 'Analytics', href: `${basePath}/analytics`, icon: BarChart3 },
     { name: 'Team', href: `${basePath}/team`, icon: Users, roles: ['owner'] },
@@ -28,12 +28,38 @@ export function Sidebar() {
   ]
 
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-white dark:bg-gray-950">
-      <div className="flex h-14 items-center border-b px-4">
-        <span className="text-xl font-bold text-blue-600 dark:text-blue-400">BYAPAR AI</span>
+    <div className="flex h-full w-66 flex-col border-r border-slate-100 bg-white dark:bg-slate-950 dark:border-slate-900 shrink-0">
+      {/* Brand Header */}
+      <div className="flex h-16 items-center px-6 border-b border-slate-100 dark:border-slate-900">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-xl bg-primary flex items-center justify-center">
+            <Zap className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white">BYAPAR AI</span>
+        </div>
       </div>
+
+      {/* Workspace Shield Context Panel (Crucial SaaS UX indicator) */}
+      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-900 bg-slate-50/50 dark:bg-slate-900/10">
+        <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-white dark:bg-slate-900 dark:border-slate-800 shadow-sm flex flex-col gap-1.5 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-blue-400" />
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Active Workspace</span>
+          <div className="flex items-center gap-2 mt-0.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate flex-1">{activeBusinessName || 'Demo Workspace'}</span>
+          </div>
+          <div className="text-[9px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md w-fit mt-1 self-start capitalize">
+            Role: {activeRole}
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation menu */}
       <div className="flex-1 overflow-auto py-4">
-        <nav className="grid gap-1 px-2">
+        <nav className="grid gap-1 px-3">
           {items.map((item) => {
             if (item.roles && activeRole && !item.roles.includes(activeRole)) return null
             
@@ -43,13 +69,13 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200",
                   isActive 
-                    ? "bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200" 
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-50"
+                    ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground/90 shadow-sm" 
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-100"
                 )}
               >
-                <item.icon className={cn("h-4 w-4", isActive && "text-blue-600 dark:text-blue-400")} />
+                <item.icon className={cn("h-4 w-4 transition-colors", isActive ? "text-primary" : "text-slate-400 dark:text-slate-500")} />
                 {item.name}
               </Link>
             )

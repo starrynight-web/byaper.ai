@@ -205,6 +205,8 @@ function ReviewCard({ review, businessId, onRefresh }: { review: Review; busines
           
           <div className="bg-white rounded-xl border border-blue-100 p-2 shadow-sm mb-4">
             <Textarea
+              aria-label="Edit AI suggested reply"
+              placeholder="Type your reply here..."
               value={editedReply}
               onChange={e => setEditedReply(e.target.value)}
               className="border-0 focus-visible:ring-0 resize-none text-sm text-gray-800 min-h-[100px]"

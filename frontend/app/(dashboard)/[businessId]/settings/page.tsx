@@ -55,7 +55,7 @@ export default function SettingsPage() {
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-gray-100 bg-gray-50/50">
           <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <LinkIcon className="h-5 w-5 text-purple-600" /> Connected Accounts
+            <LinkIcon className="h-5 w-5 text-cyan-600" /> Connected Accounts
           </h2>
         </div>
         <div className="p-6 sm:p-8 space-y-6">
