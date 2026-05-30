@@ -4,7 +4,16 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { fetchWithAuth } from '@/lib/api'
 import { BarChart3, MessageSquare, Star, LayoutTemplate, Clock, TrendingUp } from 'lucide-react'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import dynamic from 'next/dynamic'
+
+// Dynamically import Recharts to avoid SSR hydration issues
+const AreaChart = dynamic(() => import('recharts').then(mod => mod.AreaChart), { ssr: false })
+const Area = dynamic(() => import('recharts').then(mod => mod.Area), { ssr: false })
+const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false })
+const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: false })
+const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), { ssr: false })
+const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false })
+const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false })
 
 type AnalyticsSummary = {
   posts_published: number

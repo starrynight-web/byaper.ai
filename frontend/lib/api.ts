@@ -94,15 +94,19 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
 
 /** Redirect the browser to start the Google OAuth flow via our backend */
 export function startGoogleLogin() {
-  window.location.href = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google/login`
+  window.location.href = `${API_BASE}/auth/google/login`
 }
 
 /** Call backend logout endpoint to clear the httpOnly cookie */
 export async function logout() {
-  await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/logout`, {
-    method: 'POST',
-    credentials: 'include',
-  })
+  try {
+    await fetch(`${API_BASE}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    })
+  } catch (err) {
+    // ignore
+  }
   if (typeof window !== 'undefined') {
     localStorage.removeItem('byaper-workspace-storage')
     document.cookie = 'demo_mode=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'

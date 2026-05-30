@@ -1,4 +1,4 @@
-"""AI Generation Service — uses local Ollama or Groq API as fallback."""
+"""AI Generation Service — local Ollama (primary) or Groq API (fallback)."""
 import httpx
 import logging
 from app.core.config import settings
@@ -10,129 +10,238 @@ class AIService:
     def __init__(self):
         self.provider = settings.ai_provider
         self.ollama_url = settings.ollama_base_url
-        self.groq_api_key = settings.groq_api_key
 
-    async def _generate_ollama(self, prompt: str, model: str) -> str:
-        """Call local Ollama."""
-        async with httpx.AsyncClient() as client:
+    # ─────────────────────────────────────────────────────
+    # Low-level generators
+    # ─────────────────────────────────────────────────────
+
+    async def _ollama(self, prompt: str, model: str) -> str:
+        """Call local Ollama /api/generate."""
+        async with httpx.AsyncClient(timeout=90.0) as client:
             try:
-                response = await client.post(
+                resp = await client.post(
                     f"{self.ollama_url}/api/generate",
                     json={"model": model, "prompt": prompt, "stream": False},
-                    timeout=60.0
                 )
-                response.raise_for_status()
-                return response.json()["response"]
+                resp.raise_for_status()
+                return resp.json()["response"].strip()
             except Exception as e:
-                logger.error(f"Ollama generation failed: {e}")
-                return "AI Generation currently unavailable. (Offline Mode)"
+                logger.error(f"Ollama error ({model}): {e}")
+                return ""
 
-    async def _generate_groq(self, prompt: str, model: str) -> str:
-        """Call Groq API (fallback)."""
-        # Map ollama model names to groq model names
-        groq_model = "llama-3.1-8b-instant" if "llama" in model else "mixtral-8x7b-32768"
-        
-        async with httpx.AsyncClient() as client:
+    async def _groq(self, prompt: str) -> str:
+        """Groq API fallback (cloud LLM, fast)."""
+        async with httpx.AsyncClient(timeout=30.0) as client:
             try:
-                response = await client.post(
+                resp = await client.post(
                     "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {self.groq_api_key}"},
+                    headers={"Authorization": f"Bearer {settings.groq_api_key}"},
                     json={
-                        "model": groq_model,
+                        "model": "llama-3.1-8b-instant",
                         "messages": [{"role": "user", "content": prompt}],
                     },
-                    timeout=30.0
                 )
-                response.raise_for_status()
-                return response.json()["choices"][0]["message"]["content"]
+                resp.raise_for_status()
+                return resp.json()["choices"][0]["message"]["content"].strip()
             except Exception as e:
-                logger.error(f"Groq generation failed: {e}")
-                return "AI Generation currently unavailable. (Offline Mode)"
+                logger.error(f"Groq error: {e}")
+                return ""
 
-    async def generate_text(self, prompt: str, use_fast: bool = False) -> str:
-        model = settings.ollama_primary_model if not use_fast else settings.ollama_fast_model
-        if self.provider == "groq" and self.groq_api_key:
-            return await self._generate_groq(prompt, model)
-        return await self._generate_ollama(prompt, model)
+    async def generate(self, prompt: str, use_fast: bool = False) -> str:
+        """Route to correct provider. Falls back to mock if all fail."""
+        model = settings.ollama_fast_model if use_fast else settings.ollama_primary_model
 
-    async def generate_post_caption(self, business_context: dict, tone: str, occasion: str | None = None) -> dict:
-        """Generates a Facebook post caption in English and Bangla."""
-        context_str = f"Name: {business_context.get('name')}, Category: {business_context.get('category')}, Services: {business_context.get('services')}"
-        occasion_str = f"Occasion/Topic: {occasion}" if occasion else "Topic: Engaging general update"
-        
-        prompt = f"""
-        You are an expert social media manager for a business in Bangladesh.
-        Business Details: {context_str}
-        Tone: {tone}
-        {occasion_str}
-        
-        Generate a catchy Facebook post caption. 
-        Format your response EXACTLY like this:
-        [ENGLISH]
-        (The english caption here)
-        [BANGLA]
-        (The bangla translation here)
-        [HASHTAGS]
-        (3-5 relevant hashtags)
-        [IMAGE_PROMPT]
-        (A short visual description to generate an accompanying image, e.g., "A cozy interior of a coffee shop in Dhaka")
-        """
-        
-        raw_output = await self.generate_text(prompt)
-        
-        # Simple parser
-        caption_en = ""
-        caption_bn = ""
-        hashtags = ""
-        image_prompt = ""
-        
-        current_section = None
-        for line in raw_output.split('\n'):
+        if self.provider == "groq" and settings.groq_api_key:
+            result = await self._groq(prompt)
+        else:
+            result = await self._ollama(prompt, model)
+
+        if not result:
+            logger.warning("AI generation produced empty output — using placeholder")
+            return "[AI generation unavailable — check Ollama is running]"
+        return result
+
+    # ─────────────────────────────────────────────────────
+    # Business context builder
+    # ─────────────────────────────────────────────────────
+
+    def _build_business_context(self, business: dict) -> str:
+        """Converts a business dict into a natural-language context string for prompts."""
+        parts = []
+        if business.get("name"):
+            parts.append(f"Business Name: {business['name']}")
+        if business.get("category"):
+            parts.append(f"Type: {business['category']}")
+        if business.get("location"):
+            parts.append(f"Location: {business['location']}")
+        if business.get("description"):
+            parts.append(f"About: {business['description']}")
+        if business.get("services"):
+            services = business["services"]
+            if isinstance(services, list):
+                parts.append(f"Products/Services: {', '.join(services)}")
+            elif isinstance(services, str):
+                parts.append(f"Products/Services: {services}")
+        if business.get("opening_hours"):
+            hours = business["opening_hours"]
+            if isinstance(hours, dict):
+                hours_str = ", ".join(f"{k}: {v}" for k, v in hours.items())
+                parts.append(f"Opening Hours: {hours_str}")
+            else:
+                parts.append(f"Opening Hours: {hours}")
+        if business.get("phone"):
+            parts.append(f"Contact: {business['phone']}")
+        return "\n".join(parts) if parts else "A local business in Bangladesh"
+
+    # ─────────────────────────────────────────────────────
+    # Post Generation
+    # ─────────────────────────────────────────────────────
+
+    async def generate_post_caption(
+        self,
+        business_context: dict,
+        tone: str = "friendly",
+        occasion: str | None = None,
+    ) -> dict:
+        """Generates a Facebook post caption in English + Bangla with image prompt."""
+        ctx = self._build_business_context(business_context)
+        occasion_str = f"Topic/Occasion: {occasion}" if occasion else "Write an engaging promotional update"
+
+        prompt = f"""You are an expert social media manager for businesses in Bangladesh.
+
+{ctx}
+Tone: {tone}
+{occasion_str}
+
+Write a compelling Facebook post. Reply ONLY in this exact format with no extra text:
+
+[ENGLISH]
+<English caption here>
+
+[BANGLA]
+<Bangla translation here>
+
+[HASHTAGS]
+<3-5 relevant hashtags>
+
+[IMAGE_PROMPT]
+<One sentence visual description for image generation, e.g. "A warm cozy cafe interior in Dhaka at golden hour">
+"""
+        raw = await self.generate(prompt, use_fast=False)
+
+        # Parse sections
+        sections = {"en": "", "bn": "", "hashtags": "", "image_prompt": ""}
+        current = None
+        for line in raw.split("\n"):
             line = line.strip()
             if line == "[ENGLISH]":
-                current_section = "en"
+                current = "en"
             elif line == "[BANGLA]":
-                current_section = "bn"
+                current = "bn"
             elif line == "[HASHTAGS]":
-                current_section = "hash"
+                current = "hashtags"
             elif line == "[IMAGE_PROMPT]":
-                current_section = "img"
-            elif line:
-                if current_section == "en": caption_en += line + "\n"
-                elif current_section == "bn": caption_bn += line + "\n"
-                elif current_section == "hash": hashtags += line + " "
-                elif current_section == "img": image_prompt += line + " "
-                
+                current = "image_prompt"
+            elif line and current:
+                sections[current] += line + "\n"
+
+        biz_name = business_context.get("name", "the business")
         return {
-            "caption_en": caption_en.strip() or raw_output,
-            "caption_bn": caption_bn.strip(),
-            "hashtags": hashtags.strip(),
-            "image_prompt": image_prompt.strip() or f"A photo representing {business_context.get('name')}"
+            "caption_en": sections["en"].strip() or raw,
+            "caption_bn": sections["bn"].strip(),
+            "hashtags": sections["hashtags"].strip(),
+            "image_prompt": sections["image_prompt"].strip() or f"Professional photo for {biz_name}, Bangladesh",
         }
 
-    async def generate_messenger_reply(self, message_text: str, business_context: dict) -> str:
-        prompt = f"""
-        You are an AI assistant managing Facebook Messenger for {business_context.get('name')}.
-        Business Context: {business_context.get('services')}
-        
-        User Message: "{message_text}"
-        
-        Write a short, helpful, and polite reply. Detect if the user is writing in English, Bangla, or Banglish, and reply in the same language. Keep it under 3 sentences.
-        """
-        return await self.generate_text(prompt, use_fast=True)
+    # ─────────────────────────────────────────────────────
+    # Messenger Reply
+    # ─────────────────────────────────────────────────────
 
-    async def generate_review_reply(self, rating: int, review_text: str, business_context: dict) -> str:
-        prompt = f"""
-        You are an AI assistant managing Google Reviews for {business_context.get('name')}.
-        Rating: {rating} / 5
-        Review Text: "{review_text}"
-        
-        Write a professional reply from the owner. 
-        If 5 stars, thank them warmly.
-        If 1-3 stars, apologize, be empathetic, and offer to make it right.
-        Reply in the same language as the review.
-        """
-        return await self.generate_text(prompt, use_fast=True)
+    async def generate_messenger_reply(
+        self,
+        message_text: str,
+        business_context: dict,
+    ) -> str:
+        """Generate a short, helpful Messenger reply using business knowledge base."""
+        ctx = self._build_business_context(business_context)
+
+        prompt = f"""You are the AI customer assistant for the following business:
+
+{ctx}
+
+A customer sent this message on Facebook Messenger:
+"{message_text}"
+
+Instructions:
+- Detect if the customer is writing in English, Bangla, or Banglish and reply in the SAME language
+- Keep your reply short (2-3 sentences max)
+- Be friendly, helpful, and professional
+- If asking about hours, products, or prices, use the business info above
+- Do NOT make up information not given above
+
+Your reply:"""
+
+        reply = await self.generate(prompt, use_fast=True)
+        # Trim to reasonable length for Messenger
+        return reply[:500] if reply else "Thank you for your message! We'll get back to you shortly."
+
+    # ─────────────────────────────────────────────────────
+    # Google Review Reply
+    # ─────────────────────────────────────────────────────
+
+    async def generate_review_reply(
+        self,
+        rating: int,
+        review_text: str,
+        business_context: dict,
+    ) -> str:
+        """Generate a professional Google Review reply."""
+        ctx = self._build_business_context(business_context)
+
+        if rating >= 4:
+            tone_instruction = "Thank the customer warmly. Express genuine gratitude. Invite them to come back."
+        elif rating == 3:
+            tone_instruction = "Acknowledge their feedback positively. Thank them. Mention you're always improving."
+        else:
+            tone_instruction = "Apologize sincerely. Be empathetic. Promise to do better. Offer to resolve the issue."
+
+        prompt = f"""You are the owner of this business:
+
+{ctx}
+
+A customer left this Google Review:
+Rating: {rating}/5 stars
+Review: "{review_text}"
+
+Write a professional reply as the business owner.
+Instructions:
+- {tone_instruction}
+- Reply in the SAME language as the review (English or Bangla)
+- Keep it under 4 sentences
+- Sound human, not like a robot
+- Do NOT copy-paste generic templates
+
+Your reply:"""
+
+        reply = await self.generate(prompt, use_fast=False)
+        return reply[:600] if reply else "Thank you for your feedback! We appreciate your time."
+
+    # ─────────────────────────────────────────────────────
+    # Image Prompt for Posts
+    # ─────────────────────────────────────────────────────
+
+    async def generate_image_prompt(self, caption: str, business_name: str) -> str:
+        """Generate a detailed Pollinations.ai image prompt from a post caption."""
+        prompt = f"""Convert this Facebook post caption into a visual image description for AI image generation.
+Post: "{caption}"
+Business: {business_name}
+
+Write ONE sentence describing the ideal marketing image for this post.
+Be specific about: subject, setting, colors, mood. Style: professional marketing photo, high quality.
+Reply with ONLY the image description, nothing else."""
+
+        result = await self.generate(prompt, use_fast=True)
+        return result if result else f"Professional marketing photo for {business_name}, Bangladesh, warm colors"
 
 
 ai_service = AIService()

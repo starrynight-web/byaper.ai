@@ -21,7 +21,8 @@ class Message(Base):
     message_text: Mapped[str] = mapped_column(Text, nullable=False)
     reply_text: Mapped[str | None] = mapped_column(Text)
     reply_status: Mapped[str] = mapped_column(String(50), default="pending")  # pending/approved/sent/failed
-    auto_reply: Mapped[bool] = mapped_column(Boolean, default=True)
+    ai_reply_draft: Mapped[str | None] = mapped_column(Text)
+    is_read: Mapped[bool] = mapped_column(Boolean, default=False)
     platform: Mapped[str] = mapped_column(String(50), default="messenger")
     received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     replied_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

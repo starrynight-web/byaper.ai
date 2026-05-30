@@ -50,13 +50,11 @@ async def create_post(
 ):
     new_post = Post(
         business_id=ws.business_id,
-        caption=req.caption,
-        caption_bn=req.caption_bn,
-        hashtags=req.hashtags,
+        content=req.content,
         image_url=req.image_url,
         image_prompt=req.image_prompt,
         platform=req.platform,
-        created_by=ws.user_id
+        status="draft"
     )
     db.add(new_post)
     await db.commit()

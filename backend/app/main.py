@@ -8,10 +8,27 @@ from app.api.v1 import (
     gbp, automations, team, analytics, workers
 )
 
+import asyncio
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    from app.workers.auto_runner import auto_runner_loop
+    task = asyncio.create_task(auto_runner_loop())
+    yield
+    # Shutdown
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+
 app = FastAPI(
     title="Byapar AI Backend",
     version="1.0.0",
     description="Multi-tenant AI Automation SaaS",
+    lifespan=lifespan,
 )
 
 app.add_middleware(

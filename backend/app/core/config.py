@@ -13,27 +13,28 @@ class Settings(BaseSettings):
     # Database
     database_url: str = ""
 
-    # Upstash
+    # Upstash (optional — leave blank to disable queue)
     upstash_redis_url: str = ""
     upstash_redis_token: str = ""
     upstash_qstash_token: str = ""
     upstash_qstash_url: str = ""
 
-    # AI
+    # AI — Ollama (local, free)
     ai_provider: str = "ollama"  # "ollama" | "groq"
     ollama_base_url: str = "http://localhost:11434"
-    ollama_primary_model: str = "llama3.1:8b"
-    ollama_reply_model: str = "mistral:7b"
-    ollama_fast_model: str = "phi3:mini"
+    ollama_primary_model: str = "llama3.1:8b"          # Posts, review replies (creative)
+    ollama_reply_model: str = "deepseek-coder:6.7b"    # Messenger replies (fast)
+    ollama_fast_model: str = "deepseek-coder:6.7b"     # Fast fallback
     groq_api_key: str = ""
 
-    # Image Generation
+    # Image Generation (Pollinations.ai — FREE, no key needed)
     pollinations_api_url: str = "https://image.pollinations.ai/prompt/"
 
-    # Meta
+    # Meta / Facebook
     meta_app_id: str = ""
     meta_app_secret: str = ""
-    meta_verify_token: str = "byaper_webhook_verify_token"
+    meta_verify_token: str = "byaper_webhook_verify_123"
+    meta_page_access_token: str = ""  # Fallback — normally stored per-business in DB
 
     # Google OAuth
     google_client_id: str = ""
@@ -46,8 +47,11 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
 
+    # Automation Runner
+    auto_runner_interval_seconds: int = 300  # Run every 5 minutes
+
     # App
-    simulation_mode: bool = True
+    simulation_mode: bool = True  # true = mock all external APIs
     app_url: str = "http://localhost:3000"
     backend_url: str = "http://localhost:8000"
     environment: str = "development"

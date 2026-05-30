@@ -21,7 +21,9 @@ class Automation(Base):
     # post_scheduler | messenger_reply | review_reply | gbp_advisor
     type: Mapped[str] = mapped_column(String(50), nullable=False)
     enabled: Mapped[bool] = mapped_column(Boolean, default=False)
-    config: Mapped[dict | None] = mapped_column(JSONB)
+    # full_auto_mode: if True, AI sends without owner approval (24/7 autonomous mode)
+    full_auto_mode: Mapped[bool] = mapped_column(Boolean, default=False)
+    config: Mapped[dict | None] = mapped_column(JSONB, default=dict)
     last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(

@@ -18,20 +18,17 @@ class PostGenerateResponse(BaseModel):
 
 
 class PostCreate(BaseModel):
-    caption: str
-    caption_bn: str | None = None
-    hashtags: str | None = None
+    content: str
     image_url: str | None = None
     image_prompt: str | None = None
     platform: str = "facebook"
 
 
 class PostUpdate(BaseModel):
-    caption: str | None = None
-    caption_bn: str | None = None
-    hashtags: str | None = None
+    content: str | None = None
+    image_url: str | None = None
     status: str | None = None
-    scheduled_at: datetime | None = None
+    scheduled_time: datetime | None = None
 
 
 class PostResponse(BaseModel):
@@ -39,18 +36,13 @@ class PostResponse(BaseModel):
 
     id: uuid.UUID
     business_id: uuid.UUID
-    title: str | None = None
-    caption: str
-    caption_bn: str | None = None
-    hashtags: str | None = None
+    content: str
     image_url: str | None = None
     image_prompt: str | None = None
     platform: str
     status: str
-    scheduled_at: datetime | None = None
-    published_at: datetime | None = None
-    facebook_post_id: str | None = None
-    reach: int
-    likes: int
+    scheduled_time: datetime | None = None
+    published_post_id: str | None = None
+    error_message: str | None = None
     created_at: datetime
     updated_at: datetime

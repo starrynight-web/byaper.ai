@@ -19,7 +19,7 @@ class AnalyticsEvent(Base):
     # post_published | review_replied | message_replied | gbp_post_published
     event_type: Mapped[str] = mapped_column(String(100), nullable=False)
     entity_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
-    metadata: Mapped[dict | None] = mapped_column(JSONB)
+    event_metadata: Mapped[dict | None] = mapped_column("metadata", JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), index=True)
 
 

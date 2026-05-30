@@ -16,19 +16,14 @@ class Post(Base):
     business_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("businesses.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    title: Mapped[str | None] = mapped_column(String(255))
-    caption: Mapped[str] = mapped_column(Text, nullable=False)
-    caption_bn: Mapped[str | None] = mapped_column(Text)  # Bangla version
-    hashtags: Mapped[str | None] = mapped_column(Text)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
     image_url: Mapped[str | None] = mapped_column(Text)
     image_prompt: Mapped[str | None] = mapped_column(Text)
     platform: Mapped[str] = mapped_column(String(50), default="facebook")
     status: Mapped[str] = mapped_column(String(50), default="draft")  # draft/scheduled/published/failed
-    scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    facebook_post_id: Mapped[str | None] = mapped_column(String(255))
-    reach: Mapped[int] = mapped_column(Integer, default=0)
-    likes: Mapped[int] = mapped_column(Integer, default=0)
+    scheduled_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    published_post_id: Mapped[str | None] = mapped_column(String(255))
+    error_message: Mapped[str | None] = mapped_column(Text)
     created_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
