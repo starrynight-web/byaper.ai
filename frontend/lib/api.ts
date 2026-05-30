@@ -8,6 +8,8 @@ const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   (process.env.NODE_ENV === 'production' ? '/_backend/api/v1' : 'http://localhost:8000/api/v1')
 
+type ApiResponse = Awaited<ReturnType<Response['json']>>
+
 // Demo mock data — returned when demo_mode cookie is active
 const DEMO_DATA: Record<string, unknown> = {
   '/workspaces': [
@@ -20,7 +22,17 @@ const DEMO_DATA: Record<string, unknown> = {
     posts_published: 12,
     messages_handled: 145,
     reviews_replied: 28,
+    hours_saved: 18,
     avg_response_time_seconds: 15,
+    chart_data: [
+      { name: 'Mon', Messages: 18, Reviews: 3, Posts: 2 },
+      { name: 'Tue', Messages: 22, Reviews: 5, Posts: 1 },
+      { name: 'Wed', Messages: 16, Reviews: 4, Posts: 3 },
+      { name: 'Thu', Messages: 27, Reviews: 6, Posts: 2 },
+      { name: 'Fri', Messages: 24, Reviews: 4, Posts: 1 },
+      { name: 'Sat', Messages: 21, Reviews: 3, Posts: 2 },
+      { name: 'Sun', Messages: 17, Reviews: 3, Posts: 1 },
+    ],
   },
   '/posts': [
     { id: '1', content: '🌟 Weekend special! আমাদের নতুন মেনু আইটেম চেষ্টা করুন। #DemoCafe #Dhaka', image_url: 'https://image.pollinations.ai/prompt/cozy%20cafe%20bangladesh%20warm?width=800&height=600&nologo=true', status: 'published', platform: 'facebook', created_at: new Date(Date.now() - 86400000).toISOString() },
@@ -42,7 +54,7 @@ function isDemoMode(): boolean {
   return document.cookie.includes('demo_mode=true')
 }
 
-export async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<any> {
+export async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<ApiResponse> {
   // Demo mode — return mock data without hitting API
   if (isDemoMode()) {
     // Find matching demo data by path prefix
@@ -87,8 +99,8 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
   }
 
   if (!response.ok) {
-    const err = await response.json().catch(() => ({}))
-    throw new Error((err as any).detail || 'API request failed')
+    const err = await response.json().catch(() => ({})) as { detail?: string }
+    throw new Error(err.detail || 'API request failed')
   }
 
   return response.json()
@@ -106,7 +118,7 @@ export async function logout() {
       method: 'POST',
       credentials: 'include',
     })
-  } catch (err) {
+  } catch {
     // ignore
   }
   if (typeof window !== 'undefined') {

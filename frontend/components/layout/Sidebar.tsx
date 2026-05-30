@@ -2,12 +2,17 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import type { SVGProps } from 'react'
 import { LayoutDashboard, MessageSquare, Star, Megaphone, Settings, Users, Zap, BarChart3 } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { useWorkspaceStore } from '@/lib/stores/workspaceStore'
 
-export function Sidebar() {
+type SidebarProps = {
+  onNavigate?: () => void
+}
+
+export function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname()
   const { activeBusinessId, activeRole, activeBusinessName } = useWorkspaceStore()
 
@@ -67,6 +72,7 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={onNavigate}
                 className={cn(
                   "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200",
                   isActive 
@@ -85,7 +91,7 @@ export function Sidebar() {
   )
 }
 
-function Building2Icon(props: any) {
+function Building2Icon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}

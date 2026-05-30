@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import {
   MessageSquare, Search, Send, CheckCircle2,
-  Clock, XCircle, Bot, User as UserIcon, RefreshCw, Sparkles
+  Clock, Bot, User as UserIcon, RefreshCw, Sparkles, ArrowLeft
 } from 'lucide-react'
 
 type Message = {
@@ -40,6 +40,25 @@ export default function MessagesPage() {
   const [search, setSearch] = useState('')
   const [activeMsgId, setActiveMsgId] = useState<string | null>(null)
 
+  useEffect(() => {
+    async function load() {
+      setLoading(true)
+      try {
+        const data = await fetchWithAuth(
+          `/messages`,
+          { headers: { 'X-Business-ID': businessId } }
+        )
+        setMessages(data)
+      } catch {
+        setMessages([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    load()
+  }, [businessId])
+
   const loadMessages = async () => {
     setLoading(true)
     try {
@@ -55,24 +74,11 @@ export default function MessagesPage() {
     }
   }
 
-  useEffect(() => {
-    loadMessages()
-  }, [businessId])
-
   const filtered = messages
     .filter(m => (tab === 'all' ? true : tab === 'pending' ? m.reply_status === 'pending' : m.reply_status !== 'pending'))
     .filter(m => m.sender_name?.toLowerCase().includes(search.toLowerCase()) || m.message_text.toLowerCase().includes(search.toLowerCase()))
 
-  // Select first message automatically if none selected
-  useEffect(() => {
-    if (!activeMsgId && filtered.length > 0) {
-      setActiveMsgId(filtered[0].id)
-    } else if (filtered.length === 0) {
-      setActiveMsgId(null)
-    }
-  }, [filtered, activeMsgId])
-
-  const activeMsg = messages.find(m => m.id === activeMsgId)
+  const activeMsg = filtered.find(m => m.id === activeMsgId) ?? null
 
   return (
     <div className="flex flex-col h-[calc(100vh-8rem)] bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
@@ -94,7 +100,7 @@ export default function MessagesPage() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar - Conversation List */}
-        <div className="w-80 flex flex-col border-r border-gray-100 bg-white">
+        <div className={`${activeMsg ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-gray-100 bg-white`}>
           {/* Tabs & Search */}
           <div className="p-4 border-b border-gray-50 space-y-3">
             <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 rounded-lg w-full">
@@ -189,9 +195,9 @@ export default function MessagesPage() {
         </div>
 
         {/* Right Pane - Chat View */}
-        <div className="flex-1 flex flex-col bg-gray-50/30">
+        <div className={`${activeMsg ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-gray-50/30`}>
           {activeMsg ? (
-            <ChatPane msg={activeMsg} businessId={businessId} onRefresh={loadMessages} />
+            <ChatPane key={activeMsg.id} msg={activeMsg} businessId={businessId} onRefresh={loadMessages} onBack={() => setActiveMsgId(null)} />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-8">
               <MessageSquare className="h-12 w-12 mb-4 text-gray-200" />
@@ -204,14 +210,9 @@ export default function MessagesPage() {
   )
 }
 
-function ChatPane({ msg, businessId, onRefresh }: { msg: Message; businessId: string; onRefresh: () => void }) {
+function ChatPane({ msg, businessId, onRefresh, onBack }: { msg: Message; businessId: string; onRefresh: () => void; onBack: () => void }) {
   const [editedReply, setEditedReply] = useState(msg.ai_reply_draft || '')
   const [sending, setSending] = useState(false)
-
-  // Reset edited reply when message changes
-  useEffect(() => {
-    setEditedReply(msg.ai_reply_draft || '')
-  }, [msg])
 
   const handleSend = async (type: 'approve' | 'override') => {
     setSending(true)
@@ -241,6 +242,15 @@ function ChatPane({ msg, businessId, onRefresh }: { msg: Message; businessId: st
       {/* Customer profile header */}
       <div className="h-16 border-b border-gray-100 flex items-center px-6 bg-white shrink-0">
         <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="md:hidden -ml-2 h-9 w-9 rounded-full"
+            aria-label="Back to inbox"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
           <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
             <UserIcon className="h-4 w-4 text-gray-500" />
           </div>

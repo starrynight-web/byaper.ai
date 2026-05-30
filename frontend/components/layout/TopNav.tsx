@@ -1,14 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { Bell, LogOut, Settings, Building2 } from 'lucide-react'
+import { Bell, LogOut, Menu } from 'lucide-react'
 import { logout } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { WorkspaceSwitcher } from '@/components/workspace/WorkspaceSwitcher'
 import { useWorkspaceStore } from '@/lib/stores/workspaceStore'
 
-export function TopNav() {
-  const { clearWorkspace, activeBusinessName } = useWorkspaceStore()
+type TopNavProps = {
+  onMenuClick?: () => void
+}
+
+export function TopNav({ onMenuClick }: TopNavProps) {
+  const { clearWorkspace } = useWorkspaceStore()
   const [loggingOut, setLoggingOut] = useState(false)
 
   const handleLogout = async () => {
@@ -18,9 +22,19 @@ export function TopNav() {
   }
 
   return (
-    <header className="flex h-16 items-center gap-4 border-b border-slate-100 bg-white/80 backdrop-blur-md px-6 dark:bg-slate-950/80 dark:border-slate-900 shrink-0">
+    <header className="flex h-16 items-center gap-3 border-b border-slate-100 bg-white/80 backdrop-blur-md px-4 sm:px-6 dark:bg-slate-950/80 dark:border-slate-900 shrink-0">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onMenuClick}
+        className="lg:hidden h-9.5 w-9.5 rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 shadow-sm"
+        aria-label="Open navigation menu"
+      >
+        <Menu className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+      </Button>
+
       {/* Workspace context switcher */}
-      <div className="flex flex-1 items-center gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         <WorkspaceSwitcher />
       </div>
 
