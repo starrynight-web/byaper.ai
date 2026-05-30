@@ -42,7 +42,6 @@ export function Sidebar() {
       {/* Workspace Shield Context Panel (Crucial SaaS UX indicator) */}
       <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-900 bg-slate-50/50 dark:bg-slate-900/10">
         <div className="p-3.5 rounded-2xl border border-slate-200/80 bg-white dark:bg-slate-900 dark:border-slate-800 shadow-sm flex flex-col gap-1.5 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-blue-400" />
           <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Active Workspace</span>
           <div className="flex items-center gap-2 mt-0.5">
             <span className="relative flex h-2 w-2">
