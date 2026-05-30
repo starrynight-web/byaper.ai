@@ -97,12 +97,12 @@ export default function MessagesPage() {
         <div className="w-80 flex flex-col border-r border-gray-100 bg-white">
           {/* Tabs & Search */}
           <div className="p-4 border-b border-gray-50 space-y-3">
-            <div className="flex p-1 bg-gray-100 rounded-lg">
+            <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 rounded-lg w-full">
               {TABS.map(t => (
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  className={`h-8 px-1.5 text-[10px] font-medium rounded-md transition-all min-w-0 truncate flex items-center justify-center ${
                     tab === t.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >

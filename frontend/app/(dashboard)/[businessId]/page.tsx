@@ -9,6 +9,12 @@ import { useWorkspaceStore } from '@/lib/stores/workspaceStore'
 export default function DashboardHome() {
   const { activeBusinessId } = useWorkspaceStore()
   const [stats, setStats] = useState<any>(null)
+
+  const [automations, setAutomations] = useState({
+    facebookAutoPoster: true,
+    messengerAutoReply: true,
+    reviewAutoReplyDraftsOnly: true,
+  })
   
   useEffect(() => {
     async function loadStats() {
@@ -160,33 +166,81 @@ export default function DashboardHome() {
             <div className="flex items-center justify-between p-1">
               <div>
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Facebook Auto-Poster</p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">Active (3 posts/week)</p>
+                <p className={automations.facebookAutoPoster ? "text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5" : "text-xs text-slate-400 dark:text-slate-500 font-semibold mt-0.5"}>
+                  {automations.facebookAutoPoster ? 'Active (3 posts/week)' : 'Paused'}
+                </p>
               </div>
-              <div className="w-11 h-6 bg-emerald-500 dark:bg-emerald-600 rounded-full relative cursor-pointer shadow-inner transition-colors duration-300">
-                <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform" />
-              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={automations.facebookAutoPoster}
+                onClick={() => setAutomations((s) => ({ ...s, facebookAutoPoster: !s.facebookAutoPoster }))}
+                className={
+                  "w-11 h-6 rounded-full relative shadow-inner transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 " +
+                  (automations.facebookAutoPoster ? "bg-emerald-500 dark:bg-emerald-600" : "bg-slate-200 dark:bg-slate-700")
+                }
+              >
+                <span
+                  className={
+                    "absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 " +
+                    (automations.facebookAutoPoster ? "translate-x-5" : "translate-x-0")
+                  }
+                />
+              </button>
             </div>
 
             {/* Toggle 2 */}
             <div className="flex items-center justify-between p-1">
               <div>
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Messenger Auto-Reply</p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">Active (Under 60s)</p>
+                <p className={automations.messengerAutoReply ? "text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5" : "text-xs text-slate-400 dark:text-slate-500 font-semibold mt-0.5"}>
+                  {automations.messengerAutoReply ? 'Active (Under 60s)' : 'Paused'}
+                </p>
               </div>
-              <div className="w-11 h-6 bg-emerald-500 dark:bg-emerald-600 rounded-full relative cursor-pointer shadow-inner transition-colors duration-300">
-                <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform" />
-              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={automations.messengerAutoReply}
+                onClick={() => setAutomations((s) => ({ ...s, messengerAutoReply: !s.messengerAutoReply }))}
+                className={
+                  "w-11 h-6 rounded-full relative shadow-inner transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 " +
+                  (automations.messengerAutoReply ? "bg-emerald-500 dark:bg-emerald-600" : "bg-slate-200 dark:bg-slate-700")
+                }
+              >
+                <span
+                  className={
+                    "absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 " +
+                    (automations.messengerAutoReply ? "translate-x-5" : "translate-x-0")
+                  }
+                />
+              </button>
             </div>
 
             {/* Toggle 3 */}
             <div className="flex items-center justify-between p-1">
               <div>
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Review Auto-Reply</p>
-                <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold mt-0.5">Drafts Only (Requires Approval)</p>
+                <p className={automations.reviewAutoReplyDraftsOnly ? "text-xs text-amber-600 dark:text-amber-400 font-semibold mt-0.5" : "text-xs text-slate-400 dark:text-slate-500 font-semibold mt-0.5"}>
+                  {automations.reviewAutoReplyDraftsOnly ? 'Drafts Only (Requires Approval)' : 'Off'}
+                </p>
               </div>
-              <div className="w-11 h-6 bg-amber-400 dark:bg-amber-500 rounded-full relative cursor-pointer shadow-inner transition-colors duration-300">
-                <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform" />
-              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={automations.reviewAutoReplyDraftsOnly}
+                onClick={() => setAutomations((s) => ({ ...s, reviewAutoReplyDraftsOnly: !s.reviewAutoReplyDraftsOnly }))}
+                className={
+                  "w-11 h-6 rounded-full relative shadow-inner transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 " +
+                  (automations.reviewAutoReplyDraftsOnly ? "bg-amber-400 dark:bg-amber-500" : "bg-slate-200 dark:bg-slate-700")
+                }
+              >
+                <span
+                  className={
+                    "absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 " +
+                    (automations.reviewAutoReplyDraftsOnly ? "translate-x-5" : "translate-x-0")
+                  }
+                />
+              </button>
             </div>
           </CardContent>
         </Card>
