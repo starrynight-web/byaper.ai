@@ -4,9 +4,7 @@ import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { Building2, ChevronsUpDown, Check, PlusCircle } from 'lucide-react'
 
-import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,16 +13,24 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useWorkspaceStore } from '@/lib/stores/workspaceStore'
+import { type Role, useWorkspaceStore } from '@/lib/stores/workspaceStore'
 import { fetchWithAuth } from '@/lib/api'
+
+type Workspace = {
+  business: {
+    id: string
+    name: string
+  }
+  role: Role
+}
 
 export function WorkspaceSwitcher() {
   const router = useRouter()
   const { activeBusinessId, activeBusinessName, activeRole, setWorkspace } = useWorkspaceStore()
-  const [workspaces, setWorkspaces] = React.useState<any[]>([])
+  const [workspaces, setWorkspaces] = React.useState<Workspace[]>([])
 
   React.useEffect(() => {
-    fetchWithAuth('/workspaces').then(setWorkspaces).catch(console.error)
+    fetchWithAuth('/workspaces').then(data => setWorkspaces(data as Workspace[])).catch(console.error)
   }, [])
 
   return (
@@ -51,7 +57,7 @@ export function WorkspaceSwitcher() {
         {workspaces.map((ws) => (
           <DropdownMenuItem
             key={ws.business.id}
-            onSelect={() => {
+            onClick={() => {
               setWorkspace(ws.business.id, ws.business.name, ws.role)
               router.push(`/${ws.business.id}`)
             }}
@@ -72,7 +78,7 @@ export function WorkspaceSwitcher() {
         ))}
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onSelect={() => router.push('/setup')}
+          onClick={() => router.push('/setup')}
           className="cursor-pointer p-2 text-blue-600"
         >
           <PlusCircle className="mr-2 h-4 w-4" />

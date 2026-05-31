@@ -4,8 +4,17 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { TopNav } from '@/components/layout/TopNav'
-import { useWorkspaceStore } from '@/lib/stores/workspaceStore'
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet'
+import { type Role, useWorkspaceStore } from '@/lib/stores/workspaceStore'
 import { fetchWithAuth } from '@/lib/api'
+
+type Workspace = {
+  business: {
+    id: string
+    name: string
+  }
+  role: Role
+}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const params = useParams()
@@ -13,14 +22,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const businessId = params.businessId as string
   const { activeBusinessId, setWorkspace } = useWorkspaceStore()
   const [isReady, setIsReady] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     async function validateAndSetWorkspace() {
       // If URL doesn't match Zustand state, we need to validate and update state
       if (businessId !== activeBusinessId) {
         try {
-          const workspaces = await fetchWithAuth('/workspaces')
-          const ws = workspaces.find((w: any) => w.business.id === businessId)
+          const workspaces = await fetchWithAuth('/workspaces') as Workspace[]
+          const ws = workspaces.find(w => w.business.id === businessId)
           if (ws) {
             setWorkspace(ws.business.id, ws.business.name, ws.role)
             setIsReady(true)
@@ -28,7 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             // User doesn't have access to this workspace
             router.push('/workspace')
           }
-        } catch (e) {
+        } catch {
           router.push('/workspace')
         }
       } else {
@@ -45,9 +55,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
-      <Sidebar />
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
+      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+        <SheetContent side="left" className="w-66 p-0 gap-0 lg:hidden" showCloseButton={false}>
+          <SheetTitle className="sr-only">Dashboard navigation</SheetTitle>
+          <Sidebar onNavigate={() => setSidebarOpen(false)} />
+        </SheetContent>
+      </Sheet>
       <div className="flex flex-col flex-1 overflow-hidden">
-        <TopNav />
+        <TopNav onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
           {children}
         </main>
