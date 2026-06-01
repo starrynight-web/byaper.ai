@@ -1,11 +1,11 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { fetchWithAuth } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Star, MessageSquare, Send, CheckCircle2, Clock, RefreshCw, Sparkles, Building2 } from 'lucide-react'
+import { Star, Send, CheckCircle2, Clock, RefreshCw, Sparkles, Building2 } from 'lucide-react'
 
 type Review = {
   id: string
@@ -27,24 +27,26 @@ export default function ReviewsPage() {
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
 
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     setLoading(true)
     try {
       const data = await fetchWithAuth(
         `/reviews`,
         { headers: { 'X-Business-ID': businessId } }
       )
-      setReviews(data)
+      setReviews(Array.isArray(data) ? data as Review[] : [])
     } catch {
       setReviews([])
     } finally {
       setLoading(false)
     }
-  }
+  }, [businessId])
 
   useEffect(() => {
-    loadReviews()
-  }, [businessId])
+    queueMicrotask(() => {
+      loadReviews()
+    })
+  }, [loadReviews])
 
   const handleSync = async () => {
     setSyncing(true)

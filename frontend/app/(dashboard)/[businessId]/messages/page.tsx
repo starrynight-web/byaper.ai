@@ -10,6 +10,7 @@ import {
   MessageSquare, Search, Send, CheckCircle2,
   Clock, Bot, User as UserIcon, RefreshCw, Sparkles, ArrowLeft
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 type Message = {
   id: string
@@ -103,16 +104,23 @@ export default function MessagesPage() {
         <div className={`${activeMsg ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-gray-100 bg-white`}>
           {/* Tabs & Search */}
           <div className="p-4 border-b border-gray-50 space-y-3">
-            <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 rounded-lg w-full">
+            <div className="grid grid-cols-3 gap-1 p-1 bg-gray-100 rounded-lg w-full relative z-0">
               {TABS.map(t => (
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className={`h-8 px-1.5 text-[10px] font-medium rounded-md transition-all min-w-0 truncate flex items-center justify-center ${
-                    tab === t.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  className={`relative h-8 px-1.5 text-[10px] font-medium rounded-md min-w-0 truncate flex items-center justify-center transition-colors z-10 ${
+                    tab === t.key ? 'text-gray-900 font-bold' : 'text-gray-500 hover:text-gray-700'
                   }`}
                 >
-                  {t.label}
+                  {tab === t.key && (
+                    <motion.div
+                      layoutId="activeMsgTab"
+                      className="absolute inset-0 bg-white rounded-md shadow-sm z-[-1]"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                  <span className="relative z-10">{t.label}</span>
                 </button>
               ))}
             </div>
@@ -195,15 +203,33 @@ export default function MessagesPage() {
         </div>
 
         {/* Right Pane - Chat View */}
-        <div className={`${activeMsg ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-gray-50/30`}>
-          {activeMsg ? (
-            <ChatPane key={activeMsg.id} msg={activeMsg} businessId={businessId} onRefresh={loadMessages} onBack={() => setActiveMsgId(null)} />
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-gray-400 p-8">
-              <MessageSquare className="h-12 w-12 mb-4 text-gray-200" />
-              <p>Select a conversation to start messaging</p>
-            </div>
-          )}
+        <div className={`${activeMsg ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-gray-50/30 overflow-hidden`}>
+          <AnimatePresence mode="wait">
+            {activeMsg ? (
+              <motion.div
+                key={activeMsg.id}
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -15 }}
+                transition={{ duration: 0.2 }}
+                className="flex-1 flex flex-col h-full"
+              >
+                <ChatPane msg={activeMsg} businessId={businessId} onRefresh={loadMessages} onBack={() => setActiveMsgId(null)} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="flex-1 flex flex-col items-center justify-center text-gray-400 p-8"
+              >
+                <MessageSquare className="h-12 w-12 mb-4 text-gray-200" />
+                <p>Select a conversation to start messaging</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

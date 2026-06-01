@@ -38,25 +38,36 @@ const step4Schema = z.object({
   tone: z.enum(['friendly', 'professional', 'casual']),
 })
 
+type Step1Data = z.infer<typeof step1Schema>
+type Step2Data = z.infer<typeof step2Schema>
+type Step3Data = z.infer<typeof step3Schema>
+type Step4Data = z.infer<typeof step4Schema>
+type SetupFormData = Partial<Step1Data & Step2Data & Step3Data & Step4Data>
+type WorkspaceResponse = {
+  id: string
+}
+
+const tones = ['friendly', 'professional', 'casual'] as const
+
 export default function SetupWizard() {
   const router = useRouter()
   const { setWorkspace } = useWorkspaceStore()
   
   const [step, setStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [formData, setFormData] = useState<any>({})
+  const [formData, setFormData] = useState<SetupFormData>({})
 
   // Form setups
-  const form1 = useForm({ resolver: zodResolver(step1Schema) })
-  const form2 = useForm({ resolver: zodResolver(step2Schema) })
-  const form3 = useForm({ resolver: zodResolver(step3Schema) })
-  const form4 = useForm<z.infer<typeof step4Schema>>({ 
+  const form1 = useForm<Step1Data>({ resolver: zodResolver(step1Schema) })
+  const form2 = useForm<Step2Data>({ resolver: zodResolver(step2Schema) })
+  const form3 = useForm<Step3Data>({ resolver: zodResolver(step3Schema) })
+  const form4 = useForm<Step4Data>({ 
     resolver: zodResolver(step4Schema),
     defaultValues: { tone: 'professional' }
   })
 
-  const handleNext = async (form: any, data: any) => {
-    setFormData((prev: any) => ({ ...prev, ...data }))
+  const handleNext = (data: SetupFormData) => {
+    setFormData((prev) => ({ ...prev, ...data }))
     setStep(s => s + 1)
   }
 
@@ -69,7 +80,7 @@ export default function SetupWizard() {
       const businessRes = await fetchWithAuth('/workspaces', {
         method: 'POST',
         body: JSON.stringify({ name: formData.name })
-      })
+      }) as WorkspaceResponse
       
       const businessId = businessRes.id
 
@@ -89,7 +100,7 @@ export default function SetupWizard() {
       })
 
       // 3. Update local state and redirect
-      setWorkspace(businessId, formData.name, 'owner')
+      setWorkspace(businessId, formData.name ?? 'Untitled Business', 'owner')
       router.push(`/${businessId}`)
     } catch (err) {
       console.error('Setup failed', err)
@@ -131,14 +142,14 @@ export default function SetupWizard() {
 
         <CardContent>
           {step === 1 && (
-            <form id="step1" onSubmit={form1.handleSubmit((d) => handleNext(form1, d))} className="space-y-4">
+            <form id="step1" onSubmit={form1.handleSubmit((d) => handleNext(d))} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Business Name</Label>
                 <Input id="name" {...form1.register('name')} placeholder="e.g. Dhaka Biryani House" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
-                <Select onValueChange={(val: any) => { if(val) form1.setValue('category', val) }}>
+                <Select onValueChange={(val) => { if(val) form1.setValue('category', String(val)) }}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -155,7 +166,7 @@ export default function SetupWizard() {
           )}
 
           {step === 2 && (
-            <form id="step2" onSubmit={form2.handleSubmit((d) => handleNext(form2, d))} className="space-y-4">
+            <form id="step2" onSubmit={form2.handleSubmit((d) => handleNext(d))} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="location">Address</Label>
                 <Input id="location" {...form2.register('location')} placeholder="e.g. 123 Banani Road 11" />
@@ -172,7 +183,7 @@ export default function SetupWizard() {
           )}
 
           {step === 3 && (
-            <form id="step3" onSubmit={form3.handleSubmit((d) => handleNext(form3, d))} className="space-y-4">
+            <form id="step3" onSubmit={form3.handleSubmit((d) => handleNext(d))} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="services">Products, Services or Menu</Label>
                 <Textarea 
@@ -186,12 +197,12 @@ export default function SetupWizard() {
           )}
 
           {step === 4 && (
-            <form id="step4" onSubmit={form4.handleSubmit((d) => handleNext(form4, d))} className="space-y-4">
+            <form id="step4" onSubmit={form4.handleSubmit((d) => handleNext(d))} className="space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                {['friendly', 'professional', 'casual'].map((tone) => (
+                {tones.map((tone) => (
                   <div 
                     key={tone}
-                    onClick={() => form4.setValue('tone', tone as any)}
+                    onClick={() => form4.setValue('tone', tone)}
                     className={`border rounded-lg p-4 cursor-pointer text-center capitalize transition-colors ${form4.watch('tone') === tone ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'hover:border-gray-400'}`}
                   >
                     <div className="font-medium">{tone}</div>

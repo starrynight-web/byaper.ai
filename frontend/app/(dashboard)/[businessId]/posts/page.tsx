@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import { fetchWithAuth } from '@/lib/api'
-import { useWorkspaceStore } from '@/lib/stores/workspaceStore'
 import PostComposerModal from '@/components/posts/PostComposerModal'
 import { Button } from '@/components/ui/button'
 import {
@@ -47,7 +46,6 @@ type TabKey = (typeof TABS)[number]['key']
 export default function PostsPage() {
   const params = useParams()
   const businessId = params?.businessId as string
-  const { activeBusinessId } = useWorkspaceStore()
 
   const [posts, setPosts] = useState<Post[]>([])
   const [tab, setTab] = useState<TabKey>('all')
@@ -71,7 +69,9 @@ export default function PostsPage() {
   }, [businessId, tab])
 
   useEffect(() => {
-    loadPosts()
+    queueMicrotask(() => {
+      loadPosts()
+    })
   }, [loadPosts])
 
   const filtered = tab === 'all' ? posts : posts.filter(p => p.status === tab)
@@ -158,7 +158,6 @@ export default function PostsPage() {
 
 function PostCard({ post, onRefresh, businessId }: { post: Post; onRefresh: () => void; businessId: string }) {
   const cfg = STATUS_CONFIG[post.status]
-  const StatusIcon = cfg.icon
   const [scheduling, setScheduling] = useState(false)
 
   const handleSchedule = async () => {

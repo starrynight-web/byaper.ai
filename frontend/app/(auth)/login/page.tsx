@@ -70,7 +70,7 @@ export default function LoginPage() {
               href="/"
               className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline"
             >
-              Try the demo environment →
+              Go back to Homepage →
             </Link>
           </div>
         </div>

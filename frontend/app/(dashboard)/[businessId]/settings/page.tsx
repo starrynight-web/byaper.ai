@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Settings, Save, Building2, Link as LinkIcon, Bot } from 'lucide-react'
+import { Settings, Save, Building2, Link as LinkIcon } from 'lucide-react'
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false)
@@ -68,7 +68,7 @@ export default function SettingsPage() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">Facebook Page</h3>
-                <p className="text-sm text-gray-500">Connected to "Demo Cafe Dhaka"</p>
+                <p className="text-sm text-gray-500">Connected to &quot;Demo Cafe Dhaka&quot;</p>
               </div>
             </div>
             <Button variant="outline" className="text-rose-600 border-gray-200 hover:bg-rose-50">Disconnect</Button>

@@ -3,8 +3,16 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { fetchWithAuth } from '@/lib/api'
-import { useWorkspaceStore } from '@/lib/stores/workspaceStore'
+import { type Role, useWorkspaceStore } from '@/lib/stores/workspaceStore'
 import { Sparkles, Loader2 } from 'lucide-react'
+
+type Workspace = {
+  business: {
+    id: string
+    name: string
+  }
+  role: Role
+}
 
 /**
  * After Google OAuth, the backend sets an httpOnly JWT cookie and redirects here.
@@ -21,7 +29,8 @@ export default function AuthCallback() {
     async function handleCallback() {
       try {
         // Cookie is already set by the backend redirect — fetch workspaces
-        const workspaces: any[] = await fetchWithAuth('/workspaces')
+        const data = await fetchWithAuth('/workspaces')
+        const workspaces = Array.isArray(data) ? data as Workspace[] : []
 
         if (!workspaces || workspaces.length === 0) {
           // New user with no businesses — go to onboarding

@@ -3,12 +3,30 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { fetchWithAuth } from '@/lib/api'
-import { Megaphone, MessageSquare, Star, ArrowUpRight, TrendingUp } from 'lucide-react'
+import { Megaphone, MessageSquare, Star, TrendingUp } from 'lucide-react'
 import { useWorkspaceStore } from '@/lib/stores/workspaceStore'
+import { motion } from 'framer-motion'
+
+type AnalyticsSummary = {
+  posts_published?: number
+  messages_handled?: number
+  reviews_replied?: number
+  avg_response_time_seconds?: number
+}
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' as const } }
+}
+
+const staggerContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.08 } }
+}
 
 export default function DashboardHome() {
   const { activeBusinessId } = useWorkspaceStore()
-  const [stats, setStats] = useState<any>(null)
+  const [stats, setStats] = useState<AnalyticsSummary | null>(null)
 
   const [automations, setAutomations] = useState({
     facebookAutoPoster: true,
@@ -20,7 +38,7 @@ export default function DashboardHome() {
     async function loadStats() {
       try {
         const data = await fetchWithAuth('/analytics/summary')
-        setStats(data)
+        setStats(data as AnalyticsSummary)
       } catch (err) {
         console.error('Failed to load stats', err)
       }
@@ -31,82 +49,116 @@ export default function DashboardHome() {
   }, [activeBusinessId])
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={staggerContainer}
+      className="space-y-8"
+    >
+      <motion.div variants={fadeInUp} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-slate-100">Overview</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Here's what your AI has been doing this week.</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Here&apos;s what your AI has been doing this week.</p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Stats Cards Row */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 shadow-sm group">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Posts Published</CardTitle>
-            <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-              <Megaphone className="w-4 h-4" />
+      <motion.div 
+        variants={staggerContainer}
+        className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+      >
+        <motion.div 
+          variants={fadeInUp}
+          whileHover={{ y: -4, scale: 1.015, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05)' }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm group p-6 flex flex-col justify-between"
+        >
+          <div>
+            <div className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Posts Published</span>
+              <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                <Megaphone className="w-4 h-4" />
+              </div>
             </div>
-          </CardHeader>
-          <CardContent className="pt-2">
-            <div className="text-3xl font-black text-slate-900 dark:text-white">{stats?.posts_published || 0}</div>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center mt-2 font-semibold">
-              <TrendingUp className="w-3.5 h-3.5 mr-1" /> +20% from last week
-            </p>
-          </CardContent>
-        </Card>
+            <div className="pt-2">
+              <div className="text-3xl font-black text-slate-900 dark:text-white">{stats?.posts_published || 0}</div>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center mt-2 font-semibold">
+                <TrendingUp className="w-3.5 h-3.5 mr-1" /> +20% from last week
+              </p>
+            </div>
+          </div>
+        </motion.div>
         
-        <Card className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 shadow-sm group">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Messages Handled</CardTitle>
-            <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-              <MessageSquare className="w-4 h-4" />
+        <motion.div 
+          variants={fadeInUp}
+          whileHover={{ y: -4, scale: 1.015, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05)' }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm group p-6 flex flex-col justify-between"
+        >
+          <div>
+            <div className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Messages Handled</span>
+              <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                <MessageSquare className="w-4 h-4" />
+              </div>
             </div>
-          </CardHeader>
-          <CardContent className="pt-2">
-            <div className="text-3xl font-black text-slate-900 dark:text-white">{stats?.messages_handled || 0}</div>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center mt-2 font-semibold">
-              <TrendingUp className="w-3.5 h-3.5 mr-1" /> Avg reply: {stats?.avg_response_time_seconds || 0}s
-            </p>
-          </CardContent>
-        </Card>
+            <div className="pt-2">
+              <div className="text-3xl font-black text-slate-900 dark:text-white">{stats?.messages_handled || 0}</div>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center mt-2 font-semibold">
+                <TrendingUp className="w-3.5 h-3.5 mr-1" /> Avg reply: {stats?.avg_response_time_seconds || 0}s
+              </p>
+            </div>
+          </div>
+        </motion.div>
 
-        <Card className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 shadow-sm group">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Reviews Replied</CardTitle>
-            <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
-              <Star className="w-4 h-4" />
+        <motion.div 
+          variants={fadeInUp}
+          whileHover={{ y: -4, scale: 1.015, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05)' }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm group p-6 flex flex-col justify-between"
+        >
+          <div>
+            <div className="flex flex-row items-center justify-between pb-2">
+              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Reviews Replied</span>
+              <div className="p-2 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                <Star className="w-4 h-4" />
+              </div>
             </div>
-          </CardHeader>
-          <CardContent className="pt-2">
-            <div className="text-3xl font-black text-slate-900 dark:text-white">{stats?.reviews_replied || 0}</div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-semibold">
-              100% reply rate maintained
-            </p>
-          </CardContent>
-        </Card>
+            <div className="pt-2">
+              <div className="text-3xl font-black text-slate-900 dark:text-white">{stats?.reviews_replied || 0}</div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-semibold">
+                100% reply rate maintained
+              </p>
+            </div>
+          </div>
+        </motion.div>
         
         {/* Weekly Summary Card with Electric Sapphire Gradient */}
-        <Card className="rounded-2xl border-transparent bg-gradient-to-br from-primary via-blue-600 to-sky-600 text-white hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1 transition-all duration-300 shadow-lg relative overflow-hidden flex flex-col justify-between p-1.5">
+        <motion.div 
+          variants={fadeInUp}
+          whileHover={{ y: -4, scale: 1.015, boxShadow: '0 20px 25px -5px rgba(38, 86, 229, 0.15)' }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          className="rounded-2xl border-transparent bg-gradient-to-br from-primary via-blue-600 to-sky-600 text-white shadow-lg relative overflow-hidden flex flex-col justify-between p-6"
+        >
           <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-          <CardHeader className="pb-1 space-y-0">
-            <CardTitle className="text-xs font-bold text-white/90 uppercase tracking-widest flex items-center gap-1.5">
+          <div className="pb-1">
+            <span className="text-xs font-bold text-white/90 uppercase tracking-widest flex items-center gap-1.5">
               <TrendingUp className="w-3.5 h-3.5 text-white animate-pulse" />
               AI Weekly Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pb-4">
+            </span>
+          </div>
+          <div className="pb-4 mt-4">
             <p className="text-xs md:text-sm leading-relaxed text-white/90 font-medium italic">
-              "This week I engaged with 42 customers, secured 3 new 5-star reviews, and published a highly engaging post about your weekend special."
+              &quot;This week I engaged with 42 customers, secured 3 new 5-star reviews, and published a highly engaging post about your weekend special.&quot;
             </p>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </motion.div>
+      </motion.div>
 
       {/* Activities and Automations Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+      <motion.div variants={fadeInUp} className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         {/* Recent Activity Timeline card */}
-        <Card className="col-span-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+        <Card className="col-span-1 lg:col-span-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
           <CardHeader className="border-b border-slate-100 dark:border-slate-800/60 pb-4">
             <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">Recent Activity</CardTitle>
             <CardDescription className="text-xs text-slate-500">Actions taken by your AI assistant.</CardDescription>
@@ -117,19 +169,27 @@ export default function DashboardHome() {
 
             <div className="space-y-6">
               {/* Activity item 1 */}
-              <div className="flex items-start gap-4 relative z-10">
+              <motion.div 
+                whileHover={{ x: 4 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-start gap-4 relative z-10"
+              >
                 <div className="p-2.5 bg-primary/10 text-primary rounded-xl border-4 border-white dark:border-slate-900 shrink-0">
                   <Star className="w-4 h-4" />
                 </div>
                 <div className="flex-1 pt-1">
                   <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Auto-replied to a 5-star Google Review</p>
-                  <p className="text-xs text-slate-500 mt-0.5">From customer: "Great food!"</p>
+                  <p className="text-xs text-slate-500 mt-0.5">From customer: &quot;Great food!&quot;</p>
                 </div>
                 <div className="text-xs text-slate-400 pt-1 shrink-0">10m ago</div>
-              </div>
+              </motion.div>
 
               {/* Activity item 2 */}
-              <div className="flex items-start gap-4 relative z-10">
+              <motion.div 
+                whileHover={{ x: 4 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-start gap-4 relative z-10"
+              >
                 <div className="p-2.5 bg-primary/10 text-primary rounded-xl border-4 border-white dark:border-slate-900 shrink-0">
                   <MessageSquare className="w-4 h-4" />
                 </div>
@@ -138,25 +198,29 @@ export default function DashboardHome() {
                   <p className="text-xs text-slate-500 mt-0.5">Answered question about opening hours.</p>
                 </div>
                 <div className="text-xs text-slate-400 pt-1 shrink-0">1h ago</div>
-              </div>
+              </motion.div>
 
               {/* Activity item 3 */}
-              <div className="flex items-start gap-4 relative z-10">
+              <motion.div 
+                whileHover={{ x: 4 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-start gap-4 relative z-10"
+              >
                 <div className="p-2.5 bg-emerald-100 text-emerald-600 rounded-xl border-4 border-white dark:border-slate-900 shrink-0 dark:bg-emerald-950/30 dark:text-emerald-400">
                   <Megaphone className="w-4 h-4" />
                 </div>
                 <div className="flex-1 pt-1">
                   <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Published Facebook Post</p>
-                  <p className="text-xs text-slate-500 mt-0.5">"Check out our new interior..."</p>
+                  <p className="text-xs text-slate-500 mt-0.5">&quot;Check out our new interior...&quot;</p>
                 </div>
                 <div className="text-xs text-slate-400 pt-1 shrink-0">Yesterday</div>
-              </div>
+              </motion.div>
             </div>
           </CardContent>
         </Card>
 
         {/* Automations Status Toggles card */}
-        <Card className="col-span-3 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col">
+        <Card className="col-span-1 lg:col-span-3 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex flex-col">
           <CardHeader className="border-b border-slate-100 dark:border-slate-800/60 pb-4">
             <CardTitle className="text-lg font-bold text-slate-900 dark:text-slate-100">Automations Status</CardTitle>
             <CardDescription className="text-xs text-slate-500">Your active AI agent settings</CardDescription>
@@ -180,11 +244,10 @@ export default function DashboardHome() {
                   (automations.facebookAutoPoster ? "bg-emerald-500 dark:bg-emerald-600" : "bg-slate-200 dark:bg-slate-700")
                 }
               >
-                <span
-                  className={
-                    "absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 " +
-                    (automations.facebookAutoPoster ? "translate-x-5" : "translate-x-0")
-                  }
+                <motion.span
+                  animate={{ x: automations.facebookAutoPoster ? 20 : 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md"
                 />
               </button>
             </div>
@@ -207,11 +270,10 @@ export default function DashboardHome() {
                   (automations.messengerAutoReply ? "bg-emerald-500 dark:bg-emerald-600" : "bg-slate-200 dark:bg-slate-700")
                 }
               >
-                <span
-                  className={
-                    "absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 " +
-                    (automations.messengerAutoReply ? "translate-x-5" : "translate-x-0")
-                  }
+                <motion.span
+                  animate={{ x: automations.messengerAutoReply ? 20 : 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md"
                 />
               </button>
             </div>
@@ -234,17 +296,16 @@ export default function DashboardHome() {
                   (automations.reviewAutoReplyDraftsOnly ? "bg-amber-400 dark:bg-amber-500" : "bg-slate-200 dark:bg-slate-700")
                 }
               >
-                <span
-                  className={
-                    "absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md transition-transform duration-200 " +
-                    (automations.reviewAutoReplyDraftsOnly ? "translate-x-5" : "translate-x-0")
-                  }
+                <motion.span
+                  animate={{ x: automations.reviewAutoReplyDraftsOnly ? 20 : 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  className="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow-md"
                 />
               </button>
             </div>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

@@ -1,7 +1,19 @@
 import { Switch } from '@/components/ui/switch'
 import { Clock, Bot, Rocket } from 'lucide-react'
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { fetchWithAuth } from '@/lib/api'
+
+export type Automation = {
+  id: string
+  type: string
+  description?: string
+  enabled: boolean
+  full_auto_mode: boolean
+  last_run_at?: string | null
+  config?: {
+    model?: string
+  }
+}
 
 export function AutomationCard({
   businessId,
@@ -12,11 +24,11 @@ export function AutomationCard({
   onUpdate
 }: {
   businessId: string,
-  automation: any,
-  icon: React.ReactNode,
+  automation: Automation,
+  icon: ReactNode,
   bgColor: string,
   title: string,
-  onUpdate: (id: string, updates: any) => void
+  onUpdate: (id: string, updates: Partial<Automation>) => void
 }) {
   const [updating, setUpdating] = useState(false)
 
@@ -98,7 +110,7 @@ export function AutomationCard({
         <div className="mt-2 pt-5 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50 p-4 rounded-2xl">
           <div>
             <h3 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
-              <Rocket className="w-4 h-4 text-purple-500" />
+              <Rocket className="w-4 h-4 text-indigo-500" />
               24/7 Full Auto Mode
             </h3>
             <p className="text-xs text-gray-500 mt-1">If enabled, AI will send replies/posts instantly without waiting for your approval.</p>
@@ -114,7 +126,7 @@ export function AutomationCard({
             <button 
               onClick={() => handleModeChange(true)}
               disabled={updating}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${automation.full_auto_mode ? 'bg-purple-100 text-purple-800 shadow-sm' : 'text-gray-500 hover:bg-gray-50'}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${automation.full_auto_mode ? 'bg-indigo-100 text-indigo-800 shadow-sm' : 'text-gray-500 hover:bg-gray-50'}`}
             >
               Full Auto (24/7)
             </button>

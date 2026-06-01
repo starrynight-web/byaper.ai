@@ -33,7 +33,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
   ]
 
   return (
-    <div className="flex h-full w-66 flex-col border-r border-slate-100 bg-white dark:bg-slate-950 dark:border-slate-900 shrink-0">
+    <div className="flex h-full w-64 flex-col border-r border-slate-100 bg-white dark:bg-slate-950 dark:border-slate-900 shrink-0">
       {/* Brand Header */}
       <div className="flex h-16 items-center px-6 border-b border-slate-100 dark:border-slate-900">
         <div className="flex items-center gap-2">

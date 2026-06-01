@@ -4,6 +4,20 @@ import { useState, useEffect } from 'react'
 import { fetchWithAuth } from '@/lib/api'
 import { Building2, Save } from 'lucide-react'
 
+type Workspace = {
+  business: {
+    id: string
+    name?: string
+    category?: string
+    location?: string
+    description?: string
+    services?: unknown
+    opening_hours?: unknown
+    phone?: string
+    website?: string
+  }
+}
+
 export function BusinessKnowledgeForm({ businessId }: { businessId: string }) {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -23,7 +37,9 @@ export function BusinessKnowledgeForm({ businessId }: { businessId: string }) {
       setLoading(true)
       try {
         const workspaces = await fetchWithAuth('/workspaces')
-        const ws = workspaces.find((w: any) => w.business.id === businessId)
+        const ws = Array.isArray(workspaces)
+          ? (workspaces as Workspace[]).find((w) => w.business.id === businessId)
+          : undefined
         if (ws && ws.business) {
           setFormData({
             name: ws.business.name || '',
@@ -58,7 +74,7 @@ export function BusinessKnowledgeForm({ businessId }: { businessId: string }) {
         body: JSON.stringify(formData)
       })
       alert('Business knowledge saved! AI will now use this for replies.')
-    } catch (err) {
+    } catch {
       alert('Failed to save')
     } finally {
       setSaving(false)
